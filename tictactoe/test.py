@@ -1,4 +1,4 @@
-from tictactoe import initial_state, player, actions, result, winner, terminal
+from tictactoe import initial_state, player, actions, result, winner, terminal, utility
 import unittest
 
 class TestTTTMethods(unittest.TestCase):
@@ -36,19 +36,17 @@ class TestTTTMethods(unittest.TestCase):
                 else:
                     self.board[i][j] = "O"
 
-    def test_winner(self):
+    def test_winner_terminal_utility(self):
         self.assertIsNone(winner(self.board))
-        self.fill_top_row_with_x()
-        self.assertEqual(winner(self.board), "X")
-        self.fill_board_with_tie_result()
-        self.assertIsNone(winner(self.board))
-
-    def test_terminal(self):
         self.assertFalse(terminal(self.board))
         self.fill_top_row_with_x()
+        self.assertEqual(winner(self.board), "X")
         self.assertTrue(terminal(self.board))
+        self.assertEqual(utility(self.board), 1)
         self.fill_board_with_tie_result()
+        self.assertIsNone(winner(self.board))
         self.assertTrue(terminal(self.board))
+        self.assertEqual(utility(self.board), 0)
 
 
 if __name__ == '__main__':
