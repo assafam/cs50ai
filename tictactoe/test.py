@@ -1,4 +1,4 @@
-from tictactoe import initial_state, player, actions, result, winner, terminal, utility
+from tictactoe import initial_state, player, actions, result, winner, terminal, utility, extermum
 import unittest
 
 class TestTTTMethods(unittest.TestCase):
@@ -47,6 +47,12 @@ class TestTTTMethods(unittest.TestCase):
         self.assertIsNone(winner(self.board))
         self.assertTrue(terminal(self.board))
         self.assertEqual(utility(self.board), 0)
+
+    def test_extermum(self):
+        self.assertEqual(extermum(self.board), 0)
+        self.fill_board_with_tie_result()
+        self.board[0][0] = None
+        self.assertEqual(extermum(self.board), 0)
 
 
 if __name__ == '__main__':

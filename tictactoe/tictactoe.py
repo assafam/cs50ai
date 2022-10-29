@@ -47,7 +47,7 @@ def result(board, action):
     """
     Returns the board that results from making move (i, j) on the board.
     """
-    if board[action[0]][action[1]] != EMPTY:
+    if board[action[0]][action[1]] != EMPTY or action[0] < 0 or action[0] > 2 or action[1] < 0 or action[1] > 2:
         raise RuntimeError('Invalid move')
 
     new_board = deepcopy(board)
@@ -106,9 +106,44 @@ def utility(board):
     else:
         return 0
 
+def extermum(board):
+    """
+    Returns the maximal or minimal utility for a given board
+    """
+    # For terminal boards, return utility
+    if terminal(board):
+        return utility(board)
+
+    # Initialize best move and best utility
+    next_player = player(board)
+    if next_player == X:
+        best_utility = -math.inf
+    else:
+        best_utility = math.inf
+
+    # Iterate over all possible actions and keep best utility
+    for action in actions(board):
+        next_board = result(board, action)
+        next_utility = extermum(next_board)
+        if (next_player == X and next_utility > best_utility) or (
+           (next_player == O and next_utility < best_utility)):
+            best_utility = next_utility
+
+    return best_utility
 
 def minimax(board):
     """
     Returns the optimal action for the current player on the board.
     """
-    raise NotImplementedError
+    # If game ended, return None
+    if terminal(board):
+        return None
+
+    # Evaluate all possible actions
+    action_scores = []
+    for action in actions(board):
+        action_scores.append((extermum(result(board, action)), action))
+
+    # Return action with highest utility for maximizing player, or lowest utility for minimizing player
+    action_scores.sort(reverse=(player(board) == X))
+    return action_scores[0][1]
