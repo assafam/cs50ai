@@ -103,6 +103,7 @@ def sample_pagerank(corpus, damping_factor, n):
         page = random.choices(list(transition_prob.keys()), list(transition_prob.values()))[0]
         page_visits[page] += 1
 
+    # Calculate PageRank
     page_rank = {p: page_visits[p] / n for p in page_visits.keys()}
     assert 0.99 < sum(page_rank.values()) < 1.01
 
