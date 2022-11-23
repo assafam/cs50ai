@@ -75,7 +75,7 @@ def transition_model(corpus, page, damping_factor):
         for k in corpus.keys():
             pages[k] = random_prob
     
-    assert sum(pages.values()) > 0.99
+    assert 0.99 < sum(pages.values()) < 1.01
 
     return pages
 
@@ -89,7 +89,24 @@ def sample_pagerank(corpus, damping_factor, n):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    raise NotImplementedError
+    page_visits = dict()
+    for k in corpus.keys():
+        page_visits[k] = 0
+
+    # Choose first page at random
+    page = random.choice(list(corpus.keys()))
+    page_visits[page] += 1
+
+    # Choose other pages according to the transition model
+    for _ in range(n - 1):
+        transition_prob = transition_model(corpus, page, damping_factor)
+        page = random.choices(list(transition_prob.keys()), list(transition_prob.values()))[0]
+        page_visits[page] += 1
+
+    page_rank = {p: page_visits[p] / n for p in page_visits.keys()}
+    assert 0.99 < sum(page_rank.values()) < 1.01
+
+    return page_rank
 
 
 def iterate_pagerank(corpus, damping_factor):
