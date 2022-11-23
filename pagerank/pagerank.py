@@ -119,7 +119,41 @@ def iterate_pagerank(corpus, damping_factor):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    raise NotImplementedError
+    DIFF_THRESHOLD = 0.001
+
+    # Assign initial PageRank score
+    page_rank = dict()
+    initial_score = 1 / len(corpus)
+    for k in corpus.keys():
+        page_rank[k] = initial_score
+
+    # Update PageRank scores
+    damping_update_factor = (1 - damping_factor) / len(corpus)
+    while True:
+        new_page_rank = dict()
+        for page in corpus.keys():
+            new_page_rank[page] = damping_update_factor
+
+            for linking_page in corpus.keys():
+                if page in corpus[linking_page]:
+                    new_page_rank[page] += damping_factor * page_rank[linking_page] / len(corpus[linking_page])
+                elif not len(corpus[linking_page]):
+                    # A page without links is interpreted as having links to every page in the corpus
+                    new_page_rank[page] += damping_factor * page_rank[linking_page] / len(corpus.keys())
+
+        # Stop looping when updates converge
+        last_update = True
+        for page in corpus.keys():
+            if abs(new_page_rank[page] - page_rank[page]) > DIFF_THRESHOLD:
+                last_update = False
+
+        page_rank = new_page_rank
+        if last_update:
+            break
+
+    assert 0.99 < sum(page_rank.values()) < 1.01
+
+    return page_rank
 
 
 if __name__ == "__main__":
