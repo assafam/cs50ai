@@ -128,6 +128,26 @@ def powerset(s):
     ]
 
 
+def num_genes(person, one_gene, two_genes):
+    """
+    Calculate number of genes to test for.
+    """
+    if person in one_gene:
+        assert person not in two_genes
+        return 1
+    elif person in two_genes:
+        return 2
+    else:
+        return 0
+
+
+def prob_inheritance(condition):
+    """
+    Calculate probablity for inheritance with or without mutation.
+    """
+    return 1 - PROBS["mutation"] if condition else PROBS["mutation"] 
+
+
 def joint_probability(people, one_gene, two_genes, have_trait):
     """
     Compute and return a joint probability.
@@ -139,8 +159,46 @@ def joint_probability(people, one_gene, two_genes, have_trait):
         * everyone in set `have_trait` has the trait, and
         * everyone not in set` have_trait` does not have the trait.
     """
-    raise NotImplementedError
+    prob = 1  # Idempotent for multiplication
+    for person in people.keys():
+        num_genes_person = num_genes(person, one_gene, two_genes)
+        # Calculate probability to have n copies of the gene:
+        # For a person with no parents in the dataset, use data from PROBS
+        if people[person]["mother"] is None or people[person]["father"] is None:
+            prob *= PROBS["gene"][num_genes_person] 
+        # Else get data from parents * mutation
+        else:
+            num_genes_mother = num_genes(people[person]["mother"], one_gene, two_genes)
+            num_genes_father = num_genes(people[person]["father"], one_gene, two_genes)
+            if num_genes_person == 1:
+                if num_genes_mother == 1 or num_genes_father == 1:
+                    # 1 gene for person and 1 gene for at least one parent
+                    prob *= 0.5 * prob_inheritance(True) + 0.5 * prob_inheritance(False)
+                elif num_genes_mother == num_genes_father:
+                    # 1 gene for person, 0 or 2 genes for both mother and father
+                    prob *= prob_inheritance(True) * prob_inheritance(False) * 2
+                else:
+                    # 1 gene for person, 0 genes for mother and 2 for father or vice versa
+                    prob *= prob_inheritance(True) ** 2 + prob_inheritance(False) ** 2
+            else:
+                if num_genes_mother == 1 or num_genes_father == 1:
+                    # 0 or 2 genes for person and 1 gene for at least one parent
+                    prob *= 0.5 * prob_inheritance(True) + 0.5 * prob_inheritance(False)
+                    if num_genes_mother == 1 and num_genes_father == 1:
+                        # 0 or 2 genes for person and 1 gene for both parents
+                        prob *= 0.5 * prob_inheritance(True) + 0.5 * prob_inheritance(False)
+                    else:
+                        # 0 or 2 genes for person and one parent, 1 gene for the other parent
+                        prob *= prob_inheritance(num_genes_mother == num_genes_person or num_genes_father == num_genes_person)
+                else:
+                    # 0 or 2 genes for person and both parents
+                    prob *= (prob_inheritance(num_genes_mother == num_genes_person) *
+                             prob_inheritance(num_genes_father == num_genes_person))
 
+        # Calculate probability to have the trait according to number of genes for person
+        prob *= PROBS["trait"][num_genes_person][person in have_trait]
+
+    return prob
 
 def update(probabilities, one_gene, two_genes, have_trait, p):
     """
@@ -149,7 +207,8 @@ def update(probabilities, one_gene, two_genes, have_trait, p):
     Which value for each distribution is updated depends on whether
     the person is in `have_gene` and `have_trait`, respectively.
     """
-    raise NotImplementedError
+    # raise NotImplementedError
+    pass
 
 
 def normalize(probabilities):
@@ -157,7 +216,8 @@ def normalize(probabilities):
     Update `probabilities` such that each probability distribution
     is normalized (i.e., sums to 1, with relative proportions the same).
     """
-    raise NotImplementedError
+    # raise NotImplementedError
+    pass
 
 
 if __name__ == "__main__":
