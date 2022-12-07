@@ -1,5 +1,6 @@
 import unittest
 
+from crossword import Variable
 from generate import Crossword, CrosswordCreator
 
 
@@ -60,6 +61,12 @@ class TestGenerateMethods(unittest.TestCase):
                             overlap is None or
                             len({w for w in creator.domains[y] if w[overlap[1]] == word_x[overlap[0]]}) > 0
                             )
+
+    def test_assignment_complete(self):
+        creator = self.creators[0]
+        self.assertTrue(creator.assignment_complete({v: "A" for v in creator.crossword.variables}))
+        self.assertFalse(creator.assignment_complete({v: None for v in creator.crossword.variables}))
+        self.assertFalse(creator.assignment_complete({Variable(0, 1, 'across', 3): "A"}))
 
 
 if __name__ == "__main__":
