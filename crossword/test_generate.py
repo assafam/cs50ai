@@ -68,6 +68,19 @@ class TestGenerateMethods(unittest.TestCase):
         self.assertFalse(creator.assignment_complete({v: None for v in creator.crossword.variables}))
         self.assertFalse(creator.assignment_complete({Variable(0, 1, 'across', 3): "A"}))
 
+    def test_consistent(self):
+        creator = self.creators[0]
+        assignment = dict()
+        assignment[Variable(0, 1, 'across', 3)] = "ABC"
+        assignment[Variable(4, 1, 'across', 4)] = "SAME"
+        self.assertTrue(creator.consistent(assignment))
+        assignment[Variable(1, 4, 'down', 4)] = "SAME"      # Non-distinct word
+        self.assertFalse(creator.consistent(assignment))
+        assignment[Variable(1, 4, 'down', 4)] = "WRONG_LENGTH"
+        self.assertFalse(creator.consistent(assignment))
+        assignment[Variable(0, 1, 'down', 5)] = "ABCDE"
+        self.assertFalse(creator.consistent(assignment))    # Conflicts
+
 
 if __name__ == "__main__":
     unittest.main()
