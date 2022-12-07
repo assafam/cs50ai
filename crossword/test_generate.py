@@ -7,14 +7,13 @@ class TestGenerateMethods(unittest.TestCase):
     def setUp(self):
         crossword_src = [
             ("data/structure0.txt", "data/words0.txt"),
-            ("data/structure1.txt", "data/words1.txt"),
-            ("data/structure2.txt", "data/words2.txt"),
+            # ("data/structure1.txt", "data/words1.txt"),
+            # ("data/structure2.txt", "data/words2.txt"),
             ]
-        self.crosswords = []
         self.creators = []
         for structure, words in crossword_src:
-            self.crosswords.append(Crossword(structure, words))
-            self.creators.append(CrosswordCreator(self.crosswords[-1]))
+            crossword = Crossword(structure, words)
+            self.creators.append(CrosswordCreator(crossword))
 
     def test_enforce_node_consistency(self):
         for creator in self.creators:
@@ -22,6 +21,27 @@ class TestGenerateMethods(unittest.TestCase):
             for var, words in creator.domains.items():
                 for word in words:
                     self.assertEqual(len(word), var.length)
+
+    def test_revise(self):
+        for creator in self.creators:
+            creator.enforce_node_consistency()
+            for x in creator.crossword.variables:
+                for y in creator.crossword.variables:
+                    if x == y:
+                        continue
+
+                    creator.revise(x, y)
+
+                    # Verify that arc is consistent after revision
+                    overlap = creator.crossword.overlaps[x, y]
+                    for word_x in creator.domains[x]:
+                        self.assertTrue(
+                            overlap is None or
+                            len({w for w in creator.domains[y] if w[overlap[1]] == word_x[overlap[0]]}) > 0
+                            )
+
+                    # No further revision is expected
+                    self.assertFalse(creator.revise(x, y))
 
 
 if __name__ == "__main__":
