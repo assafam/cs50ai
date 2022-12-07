@@ -43,6 +43,24 @@ class TestGenerateMethods(unittest.TestCase):
                     # No further revision is expected
                     self.assertFalse(creator.revise(x, y))
 
+    def test_ac3(self):
+        for creator in self.creators:
+            creator.enforce_node_consistency()
+            creator.ac3(None)
+
+            # Verify that all arcs are consistent
+            for x in creator.crossword.variables:
+                for y in creator.crossword.variables:
+                    if x == y:
+                        continue
+
+                    overlap = creator.crossword.overlaps[x, y]
+                    for word_x in creator.domains[x]:
+                        self.assertTrue(
+                            overlap is None or
+                            len({w for w in creator.domains[y] if w[overlap[1]] == word_x[overlap[0]]}) > 0
+                            )
+
 
 if __name__ == "__main__":
     unittest.main()
