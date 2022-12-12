@@ -1,7 +1,7 @@
 import unittest
 
-from crossword import Variable
-from generate import Crossword, CrosswordCreator
+from crossword import Crossword, Variable
+from generate import CrosswordCreator
 
 
 class TestGenerateMethods(unittest.TestCase):
@@ -78,8 +78,23 @@ class TestGenerateMethods(unittest.TestCase):
         self.assertFalse(creator.consistent(assignment))
         assignment[Variable(1, 4, 'down', 4)] = "WRONG_LENGTH"
         self.assertFalse(creator.consistent(assignment))
-        assignment[Variable(0, 1, 'down', 5)] = "ABCDE"
-        self.assertFalse(creator.consistent(assignment))    # Conflicts
+        assignment[Variable(0, 1, 'down', 5)] = "ABCDE"     # Conflicts
+        self.assertFalse(creator.consistent(assignment))
+
+    def test_order_domain_values(self):
+        creator = self.creators[0]
+        creator.enforce_node_consistency()
+        # Conflict with two other variables, result dict: {'THREE': 5, 'SEVEN': 5, 'EIGHT': 7}
+        assignment = dict()
+        self.assertIn(creator.order_domain_values(Variable(0, 1, 'down', 5), assignment),
+                      [["SEVEN", "THREE", "EIGHT"], ["THREE", "SEVEN", "EIGHT"]])
+        # Conflict with one other variable, result dict: {'THREE': 3, 'SEVEN': 2, 'EIGHT': 3}
+        assignment[Variable(0, 1, 'across', 3)] = "TEN"
+        self.assertIn(creator.order_domain_values(Variable(0, 1, 'down', 5), assignment),
+                      [["SEVEN", "THREE", "EIGHT"], ["SEVEN", "EIGHT", "THREE"]])
+        # Conflict with no other variables, result dict: {'THREE': 0, 'SEVEN': 0, 'EIGHT': 0}
+        assignment[Variable(4, 1, 'across', 4)] = "SAME"
+        self.assertEqual(len(creator.order_domain_values(Variable(0, 1, 'down', 5), assignment)), 3)
 
 
 if __name__ == "__main__":
