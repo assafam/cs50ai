@@ -96,6 +96,26 @@ class TestGenerateMethods(unittest.TestCase):
         assignment[Variable(4, 1, 'across', 4)] = "SAME"
         self.assertEqual(len(creator.order_domain_values(Variable(0, 1, 'down', 5), assignment)), 3)
 
+    def test_select_unassigned_variable(self):
+        creator = self.creators[0]
+        creator.enforce_node_consistency()
+        # Tie in remaining values and number of neighbours
+        assignment = dict()
+        self.assertIn(creator.select_unassigned_variable(assignment),
+                      [Variable(0, 1, 'down', 5), Variable(4, 1, 'across', 4)])  # Both have 2 nighbours
+        # One variable with more neighbours
+        assignment[Variable(0, 1, 'down', 5)] = "ABCDE"
+        self.assertEqual(creator.select_unassigned_variable(assignment),
+                         Variable(4, 1, 'across', 4))
+        # One variable with less remaining values
+        assignment[Variable(4, 1, 'across', 4)] = "SAME"
+        self.assertEqual(creator.select_unassigned_variable(assignment),
+                         Variable(1, 4, 'down', 4))
+        # Single unassigned variable
+        assignment[Variable(0, 1, 'across', 3)] = "TEN"
+        self.assertEqual(creator.select_unassigned_variable(assignment),
+                         Variable(1, 4, 'down', 4))
+
 
 if __name__ == "__main__":
     unittest.main()

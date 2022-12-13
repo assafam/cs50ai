@@ -223,7 +223,17 @@ class CrosswordCreator():
         degree. If there is a tie, any of the tied variables are acceptable
         return values.
         """
-        raise NotImplementedError
+        # Create a dict of variables with number of remaining values, filter out variables already in assignment
+        vars = {v: len(self.domains[v]) for v in self.crossword.variables if v not in assignment}
+        assert len(vars) > 0
+        # Filter items which have more than the minimum number of remaining items
+        vars = {k: v for k, v in vars.items() if v == min(vars.values())}
+        if len(vars) == 1:
+            return list(vars.keys())[0]
+
+        # For remaining variables, sort according to number of neighbours
+        num_neighbours = {v: len(self.crossword.neighbors(v)) for v in vars.keys()}
+        return sorted(num_neighbours, key=num_neighbours.get, reverse=True)[0]
 
     def backtrack(self, assignment):
         """
