@@ -116,6 +116,14 @@ class TestGenerateMethods(unittest.TestCase):
         self.assertEqual(creator.select_unassigned_variable(assignment),
                          Variable(1, 4, 'down', 4))
 
+    def test_backtrack(self):
+        for creator in self.creators:
+            creator.enforce_node_consistency()
+            creator.ac3(None)
+            assignment = creator.backtrack(dict())
+            self.assertTrue(creator.consistent(assignment))
+            self.assertTrue(creator.assignment_complete(assignment))
+
 
 if __name__ == "__main__":
     unittest.main()
