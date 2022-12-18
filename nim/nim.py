@@ -101,7 +101,10 @@ class NimAI():
         Return the Q-value for the state `state` and the action `action`.
         If no Q-value exists yet in `self.q`, return 0.
         """
-        raise NotImplementedError
+        if (tuple(state), tuple(action)) not in self.q:
+            return 0
+        else:
+            return self.q[(tuple(state), tuple(action))]
 
     def update_q_value(self, state, action, old_q, reward, future_rewards):
         """
@@ -118,7 +121,7 @@ class NimAI():
         `alpha` is the learning rate, and `new value estimate`
         is the sum of the current reward and estimated future rewards.
         """
-        raise NotImplementedError
+        self.q[(tuple(state), tuple(action))] = old_q + self.alpha * (reward + future_rewards - old_q)
 
     def best_future_reward(self, state):
         """
@@ -130,7 +133,15 @@ class NimAI():
         Q-value in `self.q`. If there are no available actions in
         `state`, return 0.
         """
-        raise NotImplementedError
+        actions = Nim.available_actions(state)
+        if len(actions) == 0:
+            return 0
+
+        best_q_val = -math.inf
+        for action in actions:
+            best_q_val = max(best_q_val, self.get_q_value(state, action))
+
+        return best_q_val
 
     def choose_action(self, state, epsilon=True):
         """
@@ -147,7 +158,22 @@ class NimAI():
         If multiple actions have the same Q-value, any of those
         options is an acceptable return value.
         """
-        raise NotImplementedError
+        actions = Nim.available_actions(state)
+        if len(actions) == 0:
+            return None
+
+        best_q_val = -math.inf
+        best_action = None
+        for action in actions:
+            q_val = self.get_q_value(state, action)
+            if q_val > best_q_val:
+                best_q_val = q_val
+                best_action = action
+
+        if epsilon and random.random() < self.epsilon:
+            best_action = random.choice(list(actions))
+
+        return best_action
 
 
 def train(n):
