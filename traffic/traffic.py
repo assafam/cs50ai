@@ -79,7 +79,23 @@ def get_model():
     `input_shape` of the first layer is `(IMG_WIDTH, IMG_HEIGHT, 3)`.
     The output layer should have `NUM_CATEGORIES` units, one for each category.
     """
-    raise NotImplementedError
+    model = tf.keras.models.Sequential([
+        tf.keras.Input(shape=(IMG_WIDTH, IMG_HEIGHT, 3)),
+
+        tf.keras.layers.Flatten(),
+
+        tf.keras.layers.Dense(NUM_CATEGORIES, activation="softmax")
+    ])
+
+    print()
+    model.summary()
+
+    model.compile(
+        optimizer=tf.keras.optimizers.Adam(),
+        loss=tf.keras.losses.CategoricalCrossentropy(),
+        metrics=[tf.keras.metrics.Accuracy()]
+    )
+    return model
 
 
 if __name__ == "__main__":
