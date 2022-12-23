@@ -67,7 +67,7 @@ def load_data(data_dir):
             img = cv2.imread(os.path.join(data_dir, str(category), filename))
             assert img is not None, f"Could not read image {os.path.join(data_dir, str(category), filename)}"
             img = cv2.resize(img, (IMG_WIDTH, IMG_HEIGHT))
-            images.append(img)
+            images.append(img / 255.0)
             labels.append(category)
 
     return (images, labels)
@@ -91,9 +91,9 @@ def get_model():
     model.summary()
 
     model.compile(
-        optimizer=tf.keras.optimizers.Adam(),
-        loss=tf.keras.losses.CategoricalCrossentropy(),
-        metrics=[tf.keras.metrics.Accuracy()]
+        optimizer="adam",
+        loss="categorical_crossentropy",
+        metrics=["accuracy"]
     )
     return model
 
