@@ -1,3 +1,4 @@
+import math
 import os
 import re
 import string
@@ -70,7 +71,7 @@ def tokenize(document):
     """
     contents = []
     for word in nltk.word_tokenize(document):
-        word = re.sub(f"[{string.punctuation}]", "", word.lower())
+        word = re.sub(f"[{re.escape(string.punctuation)}]", "", word.lower())
         if word != "" and word not in nltk.corpus.stopwords.words("english"):
             contents.append(word)
 
@@ -85,7 +86,23 @@ def compute_idfs(documents):
     Any word that appears in at least one of the documents should be in the
     resulting dictionary.
     """
-    raise NotImplementedError
+    # Get all words in corpus and count number of documents in which they appear
+    words_freq = dict()
+    for document in documents.keys():
+        doc_words = set(documents[document])
+        for word in doc_words:
+            if word not in words_freq:
+                words_freq[word] = 1
+            else:
+                words_freq[word] += 1
+
+    # Calculate IDFs
+    idfs = dict()
+    num_documents = len(documents)
+    for word in words_freq.keys():
+        idfs[word] = math.log(num_documents / words_freq[word])
+
+    return idfs
 
 
 def top_files(query, files, idfs, n):
