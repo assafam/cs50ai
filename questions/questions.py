@@ -135,7 +135,21 @@ def top_sentences(query, sentences, idfs, n):
     the query, ranked according to idf. If there are ties, preference should
     be given to sentences that have a higher query term density.
     """
-    raise NotImplementedError
+    # Calculate sentence IDF (sum of IDF of all words which appear in query) and term density
+    sent_data = {sentence: {"idf": 0, "term_cnt": 0} for sentence in sentences.keys()}
+    for sentence, sentence_words in sentences.items():
+        term_cnt = 0
+        for word in query:
+            if word in sentence_words:
+                sent_data[sentence]["idf"] += idfs[word]
+                term_cnt += 1
+        sent_data[sentence]["term_cnt"] = term_cnt / len(sentence.split())
+
+    return sorted(
+        sent_data,
+        key=lambda x: (sent_data[x]["idf"], sent_data[x]["term_cnt"]),
+        reverse=True
+        )[:n]
 
 
 if __name__ == "__main__":
